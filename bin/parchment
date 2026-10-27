@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+case "$(uname -s):$(uname -m)" in
+  Darwin:arm64) target=aarch64-apple-darwin ;;
+  Darwin:x86_64) target=x86_64-apple-darwin ;;
+  Linux:aarch64|Linux:arm64) target=aarch64-unknown-linux-gnu ;;
+  Linux:x86_64|Linux:amd64) target=x86_64-unknown-linux-gnu ;;
+  *) printf '%s\n' 'Parchment does not include a CLI for this system and architecture.' >&2; exit 1 ;;
+esac
+
+bin_dir=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+binary="$bin_dir/$target/parchment"
+if [ ! -x "$binary" ]; then
+  printf 'Parchment CLI for %s is missing; install the matching platform package or the multiplatform skill.\n' "$target" >&2
+  exit 1
+fi
+exec "$binary" "$@"

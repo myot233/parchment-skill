@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parchment · 羊皮纸"
+  short_description: "把 AI 整理的 HTML、CSS 和资源发布为可分享的羊皮纸链接"
+  default_prompt: "使用 $parchment 把这些内容整理成 HTML 并发布，返回可以分享的链接。"
