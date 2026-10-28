@@ -5,7 +5,7 @@ description: 使用随附的 Parchment CLI，把 HTML、CSS、图片和 SVG 发�
 
 # Parchment · 羊皮纸
 
-将内容整理为独立 HTML，连同资源一起上传，并把返回的分享链接交给用户。官方服务是 https://parchment.ink，普通发布不需要登录或管理员 token。
+将内容整理为独立 HTML，连同资源一起上传，并把返回的分享链接交给用户。官方服务是 https://parchment.ink。已登录时默认归属当前账号，未登录也可匿名发布。
 
 用户要求发布或分享时可以直接执行；仅要求生成文件时，先保存文件即可。
 
@@ -27,7 +27,7 @@ CLI 已包含构建时的默认服务地址，运行时不需要 `.env`。`--hel
 
 ```powershell
 $ParchmentCli = "<skill-dir>\bin\parchment.cmd"
-& $ParchmentCli publish C:\path\to\report --anonymous --json
+& $ParchmentCli publish C:\path\to\report --json
 ```
 
 下文命令采用 POSIX shell 写法；在 PowerShell 中通过 `& $ParchmentCli` 传入相同参数。
@@ -54,13 +54,15 @@ report/
 
 ## 发布与验证
 
-普通分享使用匿名发布，避免使用环境中可能存在的管理员 token：
+普通分享使用 CLI 已有身份；没有当前服务的登录凭据或 token 时，CLI 自动匿名发布：
 
 ```sh
-"$PARCHMENT_CLI" publish /absolute/path/to/report --anonymous --json
+"$PARCHMENT_CLI" publish /absolute/path/to/report --json
 ```
 
-CLI 会自动生成并持久化设备码，后续复用。使用默认设备文件即可；仅在用户需要独立配置位置时指定 `--device-code-file`。
+仅在用户明确要求匿名时追加 `--anonymous`，它会覆盖登录身份和配置的 token。不要为了绕过过期或已撤销的凭据自动切换匿名；提示用户重新登录。
+
+匿名发布时 CLI 自动生成并持久化设备码，后续复用。使用默认设备文件即可；仅在用户需要独立配置位置时指定 `--device-code-file`。
 
 成功返回 JSON，包含 `id`、`title`、`description`、`file_count`、`total_bytes` 和 `url`。检查命令退出状态并解析 JSON；使用返回的 `url`，不要自行拼接或猜测 ID。
 
@@ -76,7 +78,16 @@ CLI 会自动生成并持久化设备码，后续复用。使用默认设备文�
 
 ## 管理内容
 
-只有用户要求管理操作且已提供管理员凭据时，才使用这些命令。通过运行时环境变量 `PARCHMENT_TOKEN` 提供 token，不把凭据写入发布目录或分享内容。设备码不能代替管理 token。
+只有用户要求管理操作时才执行。普通登录用户可以管理自己的内容；匿名设备码不提供管理权限。先用 `whoami` 查看当前身份，登录凭据按服务地址保存：
+
+```sh
+"$PARCHMENT_CLI" whoami --json
+"$PARCHMENT_CLI" login --no-browser --name "AI workspace"
+```
+
+`login` 会显示验证链接和用户确认码，并等待用户在浏览器完成 GitHub 登录与设备批准。将链接与确认码交给用户，不打印设备授权密钥或访问 token；不要把已有匿名设备码当作登录码。账号页位于 API 服务的 `/account`，可撤销指定凭据，也可创建仅发布或可管理内容的自动化 token。
+
+自动化可以通过运行时环境变量 `PARCHMENT_TOKEN` 提供用户 token；它会覆盖保存的登录身份。不要把凭据写入发布目录、分享内容、命令参数或普通输出。登录不会撤回旧分享链接，`logout` 仅撤销当前 CLI 凭据。
 
 ```sh
 "$PARCHMENT_CLI" list --json
@@ -84,4 +95,4 @@ CLI 会自动生成并持久化设备码，后续复用。使用默认设备文�
 "$PARCHMENT_CLI" delete p_<id> --json
 ```
 
-用户明确要求以管理员身份发布时，使用同一个运行时 token，并去掉发布命令的 `--anonymous`。
+管理员 token 可以操作全部内容，只有用户明确要求管理员操作时才使用。普通登录不会自动获得管理员权限。
