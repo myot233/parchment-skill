@@ -64,7 +64,7 @@ report/
 
 匿名发布时 CLI 自动生成并持久化设备码，后续复用。使用默认设备文件即可；仅在用户需要独立配置位置时指定 `--device-code-file`。
 
-成功返回 JSON，包含 `id`、`title`、`description`、`file_count`、`total_bytes` 和 `url`。检查命令退出状态并解析 JSON；使用返回的 `url`，不要自行拼接或猜测 ID。
+成功返回 JSON，包含 `id`、`title`、`description`、`file_count`、`total_bytes` 和 `url`，还可能包含 `reader_url`。检查命令退出状态并解析 JSON；分享时优先使用 `reader_url`（带悬浮划词批注栏），没有时使用原始静态地址 `url`，不要自行拼接或猜测 ID。校验图片、CSS 等资源时，以原始 `url` 为基准解析相对路径。
 
 发布后用 GET 或 HEAD 检查分享页和引用资源可访问，再向用户返回可点击的分享链接。页面对持有链接的人开放，`noindex` 不构成访问控制。
 
